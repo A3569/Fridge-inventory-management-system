@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Add to Inventory</h2>
+    <form id="add-form" class="mt-4" onsubmit="handleAddToInventory(event)">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="item_type">Item:</label>
+            <select name="item_type" id="item_type" class="form-control" required>
+                <option value="">Select an item...</option>
+                {% for item_type in item_types %}
+                    <option value="{{ item_type.unique_barcode }}">{{ item_type.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="amount">Amount:</label>
+            <input type="number" name="amount" id="amount" class="form-control" value="1" min="1" required>
+        </div>
+
+        <div class="form-group">
+            <label for="expiration_date">Expiration Date:</label>
+            <input type="date" name="expiration_date" id="expiration_date" class="form-control" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add to Inventory</button>
+    </form>
+</div>
+
+<script>
+// Set default expiration date to 7 days from now
+const defaultDate = new Date();
+defaultDate.setDate(defaultDate.getDate() + 7);
+document.getElementById('expiration_date').value = defaultDate.toISOString().split('T')[0];
+
+async function handleAddToInventory(event) {
+    event.preventDefault();
+    
+    const itemType = document.getElementById('item_type').value;
+    const amount = parseInt(document.getElementById('amount').value);
+    const expirationDate = document.getElementById('expiration_date').value;
+
+    try {
+        const response = await fetch('/user/api/v1/addToInventory', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                itemType: itemType,
+                amount: amount,
+                expirationDate: expirationDate
+            })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('Item added successfully');
+            window.location.href = '/user/list/';
+        } else {
+            throw new Error(data.error || 'Failed to add item');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert(error.message || 'Failed to add item');
+    }
+}
+</script>
+{% endblock %} 
