@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Photo View</h2>
+    {% csrf_token %}
+    <div class="row">
+        {% for item in items %}
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                {% if item.item_type.image_url %}
+                <img src="{{ item.item_type.image_url }}" class="card-img-top" alt="{{ item.item_type.name }}">
+                {% else %}
+                <div class="card-img-top bg-secondary text-white text-center py-5">No Image</div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.item_type.name }}</h5>
+                    <p class="card-text">
+                        Amount: {{ item.amount }}<br>
+                        Expires: {{ item.expiration_date }}
+                    </p>
+                    <button class="btn btn-danger btn-sm" onclick="removeFromInventory('{{ item.id }}')">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function removeFromInventory(itemId) {
+    if (confirm('Are you sure you want to remove this item?')) {
+        fetch('/api/v1/removeFromInventory', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            credentials: 'include',
+            body: JSON.stringify({ itemId: itemId })
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Failed to remove item');
+            }
+        });
+    }
+}
+</script>
+{% endblock %} 
