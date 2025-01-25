@@ -53,17 +53,12 @@ The system provides the following functionalities:
 - pip (Python package installer)
 - Django
 
-## Installation
-1. Clone the repository:
+## How to run the Application
 ~~~
-https://github.com/yourusername/fridge-inventory.git
+python manage.py runserver
 ~~~
 
-2. Create a virtual environment (recommended):
-
-python -m venv venv
-source venv/bin/activate # On Windows: venv\Scripts\activate
-
-## Usage
-### Running the Application
-1. Start the application:
+## How to test the system
+~~~
+python manage.py test polls.tests
+~~~
