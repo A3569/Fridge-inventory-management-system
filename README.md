@@ -1,3 +1,8 @@
+# Fridge Inventory Management System
+The **Fridge Inventory Management System** is a Python-based application designed to help users efficiently manage their fridge inventory. This system tracks items in the fridge, monitors their quantities, and notifies users about upcoming expirations. It is ideal for personal use, meal planning, or reducing food waste.
+
+# File structures
+~~~
 Fridge inventory management system/
 ├── mysite/
 │ ├── _init_.py
@@ -33,17 +38,26 @@ Fridge inventory management system/
 | ├── ├── ├── shopping_list.html
 ├── manage.py
 └── README.md
+~~~
+
+## Features
+The system provides the following functionalities:
+- **Add Items**: Add new items to the fridge with details such as name, quantity, and expiration date.
+- **Remove Items**: Remove items from the fridge after usage.
+- **Update Items**: Update the quantity or expiration date of existing items.
+- **View Inventory**: View the list of items currently in the fridge.
+- **Expiration Notifications**: Notify users of items nearing their expiration date.
 
 ## Prerequisites
 - Python 3.12 or higher
 - pip (Python package installer)
-- SQLite3
+- Django
 
 ## Installation
 1. Clone the repository:
-
-git clone https://github.com/yourusername/fridge-inventory.git
-cd fridge-inventory
+~~~
+https://github.com/yourusername/fridge-inventory.git
+~~~
 
 2. Create a virtual environment (recommended):
 
