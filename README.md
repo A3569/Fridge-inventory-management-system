@@ -5,37 +5,37 @@ The **Fridge Inventory Management System** is a Python-based application designe
 ~~~
 Fridge inventory management system/
 ├── mysite/
-│ ├── _init_.py
-│ ├── asgi.py
-│ ├── settings.py
-│ ├── urls.py
-│ ├── wsgi.py
+│   ├── _init_.py
+│   ├── asgi.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
 ├── src/
-│ ├── controllers/
-│ ├── ├── fridgeController.js
-| ├── routes/
-| ├── ├── api.js
+│   ├── controllers/
+│       ├── fridgeController.js
+|   ├── routes/
+|       ├── api.js
 ├── polls/
-│ ├── _init_.py
-│ ├── admin.py
-│ ├── api_config.py
-│ ├── apps.py
-│ ├── auth.py
-│ ├── middleware.py
-│ ├── models.py
-│ ├── tests.py
-│ ├── urls.py
-│ ├── views.py
-| ├── static/polls/js/
-| ├── ├── api.js
-| ├── templates/
-| ├── ├── base.html
-| ├── ├── polls/
-| ├── ├── ├── add_to_inventory.html
-| ├── ├── ├── grid_view.html
-| ├── ├── ├── index.html
-| ├── ├── ├── inventory_list.html
-| ├── ├── ├── shopping_list.html
+│   ├── _init_.py
+│   ├── admin.py
+│   ├── api_config.py
+│   ├── apps.py
+│   ├── auth.py
+│   ├── middleware.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   ├── views.py
+|   ├── static/polls/js/
+|       ├── api.js
+|       ├── templates/
+|       ├── base.html
+|       ├── polls/
+|       ├── add_to_inventory.html
+|       ├── grid_view.html
+|       ├── index.html
+|       ├── inventory_list.html
+|       ├── shopping_list.html
 ├── manage.py
 └── README.md
 ~~~
