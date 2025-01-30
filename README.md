@@ -30,6 +30,7 @@ Fridge inventory management system/
 │   ├── views.py
 │   ├── wsgi.py
 ├── manage.py
+├── LICENSE
 └── README.md
 ~~~
 
