@@ -4,38 +4,31 @@ The **Fridge Inventory Management System** is a Python-based application designe
 # File structures
 ~~~
 Fridge inventory management system/
-├── mysite/
-│   ├── _init_.py
+├── fridge/
+│   ├── api/
+│       ├── urls.py
+│       ├── views.py
+│   ├── migrations/
+│       ├── __init__.py/
+│   ├── templates/
+│      ├── fridge/
+│          ├── add_to_inventory.html
+│          ├── dashboard.html
+│          ├── grid_view.html
+│          ├── inventory_list.html
+│          ├── shopping_list.html
+│      ├── registration/
+|          ├── login.html
+|          ├── register.html
+|      ├── base.html
+│   ├── admin.py
 │   ├── asgi.py
+│   ├── forms.py
+│   ├── models.py
 │   ├── settings.py
 │   ├── urls.py
-│   ├── wsgi.py
-├── src/
-│   ├── controllers/
-│       ├── fridgeController.js
-|   ├── routes/
-|       ├── api.js
-├── polls/
-│   ├── _init_.py
-│   ├── admin.py
-│   ├── api_config.py
-│   ├── apps.py
-│   ├── auth.py
-│   ├── middleware.py
-│   ├── models.py
-│   ├── tests.py
-│   ├── urls.py
 │   ├── views.py
-|   ├── static/polls/js/
-|       ├── api.js
-|       ├── templates/
-|       ├── base.html
-|       ├── polls/
-|       ├── add_to_inventory.html
-|       ├── grid_view.html
-|       ├── index.html
-|       ├── inventory_list.html
-|       ├── shopping_list.html
+│   ├── wsgi.py
 ├── manage.py
 └── README.md
 ~~~
@@ -53,12 +46,20 @@ The system provides the following functionalities:
 - pip (Python package installer)
 - Django
 
-## How to run the Application
+## How to access the application
 ~~~
-python manage.py runserver
-~~~
+# Reset the database if needed
+# Delete the database file and all migration files except __init__.py
+rm db.sqlite3
+rm fridge/migrations/0*.py
 
-## How to test the system
-~~~
-python manage.py test polls.tests
+# Create the database and migrations
+python manage.py makemigrations
+python manage.py migrate
+
+# Create a new superuser
+python manage.py createsuperuser
+
+# Run the server
+python manage.py runserver
 ~~~
