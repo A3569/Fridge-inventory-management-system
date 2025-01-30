@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="page-title">Dashboard</h2>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card h-100 border-primary">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <i class="bi bi-box fs-1 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-subtitle mb-1 text-muted">Total Items</h6>
+                        <h2 class="card-title mb-0">{{ total_inventory_items }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 border-success">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <i class="bi bi-cart fs-1 text-success"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-subtitle mb-1 text-muted">Shopping List</h6>
+                        <h2 class="card-title mb-0">{{ total_shopping_list_items }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 border-info">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <i class="bi bi-tags fs-1 text-info"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-subtitle mb-1 text-muted">Item Types</h6>
+                        <h2 class="card-title mb-0">{{ unique_item_types }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 border-warning">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <i class="bi bi-exclamation-triangle fs-1 text-warning"></i>
+                    </div>
+                    <div>
+                        <h6 class="card-subtitle mb-1 text-muted">Expiring Soon</h6>
+                        <h2 class="card-title mb-0">{{ expiring_soon }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Inventory by Category</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="inventoryByCategory"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Shopping List by Category</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="shoppingByCategory"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Information Row -->
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Items by Expiration Month</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="itemsByExpiration"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Low Stock Items</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in low_stock_items %}
+                            <tr>
+                                <td>{{ item.item_type__name }}</td>
+                                <td class="text-end">{{ item.total_amount }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center">No low stock items</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prepare data for charts
+    const categories = {{ categories|safe }};
+    const inventoryData = {{ inventory_by_category|safe }};
+    const shoppingData = {{ shopping_by_category|safe }};
+    const expirationData = {{ items_by_expiration|safe }};
+
+    // Inventory by Category Chart
+    new Chart(document.getElementById('inventoryByCategory'), {
+        type: 'doughnut',
+        data: {
+            labels: inventoryData.map(item => categories[item.item_type__category]),
+            datasets: [{
+                data: inventoryData.map(item => item.count),
+                backgroundColor: [
+                    '#0d6efd', '#198754', '#0dcaf0', '#ffc107',
+                    '#dc3545', '#6610f2', '#fd7e14', '#20c997'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    });
+
+    // Shopping List by Category Chart
+    new Chart(document.getElementById('shoppingByCategory'), {
+        type: 'pie',
+        data: {
+            labels: shoppingData.map(item => categories[item.item_type__category]),
+            datasets: [{
+                data: shoppingData.map(item => item.count),
+                backgroundColor: [
+                    '#0d6efd', '#198754', '#0dcaf0', '#ffc107',
+                    '#dc3545', '#6610f2', '#fd7e14', '#20c997'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    });
+
+    // Items by Expiration Month Chart
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    new Chart(document.getElementById('itemsByExpiration'), {
+        type: 'bar',
+        data: {
+            labels: expirationData.map(item => monthNames[item.month - 1]),
+            datasets: [{
+                label: 'Items Expiring',
+                data: expirationData.map(item => item.count),
+                backgroundColor: '#0d6efd'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

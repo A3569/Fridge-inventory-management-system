@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="page-title">Grid View</h2>
+
+{% if not grouped_items %}
+<div class="alert alert-info">
+    No items in inventory
+</div>
+{% endif %}
+
+{% for category, items in grouped_items.items %}
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">
+            {% if category == 'Dairy Products' %}
+                <i class="bi bi-cup-hot me-2"></i>
+            {% elif category == 'Meat & Poultry' %}
+                <i class="bi bi-egg-fried me-2"></i>
+            {% elif category == 'Vegetables' %}
+                <i class="bi bi-flower1 me-2"></i>
+            {% elif category == 'Fruits' %}
+                <i class="bi bi-apple me-2"></i>
+            {% elif category == 'Grains & Cereals' %}
+                <i class="bi bi-basket me-2"></i>
+            {% elif category == 'Beverages' %}
+                <i class="bi bi-cup-straw me-2"></i>
+            {% elif category == 'Snacks' %}
+                <i class="bi bi-cookie me-2"></i>
+            {% elif category == 'Frozen Foods' %}
+                <i class="bi bi-snow2 me-2"></i>
+            {% else %}
+                <i class="bi bi-box me-2"></i>
+            {% endif %}
+            {{ category }}
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+            {% for item in items %}
+            <div class="col">
+                <div class="card h-100">
+                    <img src="{{ item.item_type.photo_url|default:placeholder_image }}" 
+                         class="card-img-top"
+                         alt="{{ item.item_type.name }}"
+                         style="height: 200px; object-fit: cover; cursor: pointer;"
+                         onclick="addToRemovalList('{{ item.id }}', '{{ item.item_type.name }}', '{{ item.amount }}')">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.item_type.name }}</h5>
+                        <p class="card-text">
+                            Amount: {{ item.amount }} {{ item.item_type.amount_type }}<br>
+                            Expires: {{ item.expiration_date|date:"M. j, Y" }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Removal List Section -->
+<div id="removalListSection" class="mt-4 mb-4" style="display: none;">
+    <h3>Items to Remove</h3>
+    <div class="card">
+        <ul id="removalList" class="list-group list-group-flush">
+            <!-- Items will be added here dynamically -->
+        </ul>
+        <div class="card-footer">
+            <button id="removeAllButton" 
+                    class="btn btn-danger"
+                    onclick="removeSelectedItems()">
+                Remove Selected Items
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Store items to be removed
+const removalItems = new Map();
+
+function addToRemovalList(id, name, amount) {
+    if (removalItems.has(id)) {
+        return; // Item already in list
+    }
+
+    removalItems.set(id, { name, amount });
+    updateRemovalList();
+}
+
+function removeFromList(id) {
+    removalItems.delete(id);
+    updateRemovalList();
+}
+
+function updateRemovalList() {
+    const listElement = document.getElementById('removalList');
+    const sectionElement = document.getElementById('removalListSection');
+
+    // Show/hide the section based on whether there are items
+    sectionElement.style.display = removalItems.size > 0 ? 'block' : 'none';
+
+    // Clear current list
+    listElement.innerHTML = '';
+
+    // Add each item to the list
+    for (const [id, item] of removalItems) {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `
+            <span>${item.name} - Amount: ${item.amount}</span>
+            <button class="btn btn-success btn-sm" 
+                    onclick="removeFromList('${id}')"
+                    title="Undo">
+                ↺
+            </button>
+        `;
+        listElement.appendChild(li);
+    }
+}
+
+function removeSelectedItems() {
+    if (removalItems.size === 0) {
+        return;
+    }
+
+    if (!confirm('Are you sure you want to remove all selected items?')) {
+        return;
+    }
+
+    const itemsToRemove = Array.from(removalItems.keys()).map(id => ({ ID: id }));
+
+    fetch('/api/v1/removeItems', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(itemsToRemove)
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload();  // Refresh the page to show updated list
+        } else {
+            alert('Error removing items. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error removing items. Please try again.');
+    });
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+<style>
+/* Add some hover effect to the images */
+.card-img-top:hover {
+    opacity: 0.8;
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Style for the undo button */
+.btn-success {
+    font-size: 1.2em;
+    padding: 0.2em 0.5em;
+}
+</style>
+{% endblock %} 

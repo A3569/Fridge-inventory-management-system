@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="page-title">Inventory Overview</h2>
+
+{% if not grouped_items %}
+<div class="alert alert-info">
+    No items in inventory
+</div>
+{% endif %}
+
+{% for category, items in grouped_items.items %}
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">
+            {% if category == 'Dairy Products' %}
+                <i class="bi bi-cup-hot me-2"></i>
+            {% elif category == 'Meat & Poultry' %}
+                <i class="bi bi-egg-fried me-2"></i>
+            {% elif category == 'Vegetables' %}
+                <i class="bi bi-flower1 me-2"></i>
+            {% elif category == 'Fruits' %}
+                <i class="bi bi-apple me-2"></i>
+            {% elif category == 'Grains & Cereals' %}
+                <i class="bi bi-basket me-2"></i>
+            {% elif category == 'Beverages' %}
+                <i class="bi bi-cup-straw me-2"></i>
+            {% elif category == 'Snacks' %}
+                <i class="bi bi-cookie me-2"></i>
+            {% elif category == 'Frozen Foods' %}
+                <i class="bi bi-snow2 me-2"></i>
+            {% else %}
+                <i class="bi bi-box me-2"></i>
+            {% endif %}
+            {{ category }}
+        </h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>Amount</th>
+                    <th>Item Name</th>
+                    <th>Expiration Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.amount }} {{ item.item_type.amount_type }}</td>
+                    <td>{{ item.item_type.name }}</td>
+                    <td>
+                        {% if item.expiration_date|timeuntil:today < '3 days' %}
+                            <span class="text-danger">{{ item.expiration_date }}</span>
+                        {% else %}
+                            {{ item.expiration_date }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" 
+                                onclick="removeItem('{{ item.id }}')"
+                                title="Remove Item">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+function removeItem(itemId) {
+    if (!confirm('Are you sure you want to remove this item?')) {
+        return;
+    }
+
+    const formData = {
+        'ID': itemId
+    };
+
+    fetch('/api/v1/removeItem', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('Item removed successfully.');
+            location.reload();  // Refresh the page to show updated list
+        } else {
+            alert('Error removing item. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error removing item. Please try again.');
+    });
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+<style>
+/* Style for the remove button */
+.btn-danger {
+    padding: 0.25rem 0.5rem;
+    font-size: 1.1em;
+    line-height: 1;
+}
+</style>
+{% endblock %} 

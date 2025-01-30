@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="page-title">Add Item to Inventory</h2>
+
+<div class="card">
+    <div class="card-body">
+        <form id="addItemForm" class="needs-validation" novalidate>
+            <div class="mb-4">
+                <label for="itemName" class="form-label">Item Name</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="itemName" 
+                       name="itemName" 
+                       value="{{ prefill.itemName }}"
+                       required>
+                <div class="invalid-feedback">
+                    Please enter an item name.
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="category" class="form-label">Category</label>
+                <select class="form-select" id="category" name="category" required>
+                    <option value="">Select a category...</option>
+                    {% for code, name in categories %}
+                        <option value="{{ code }}" {% if code == prefill.category %}selected{% endif %}>
+                            {{ name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <div class="invalid-feedback">
+                    Please select a category.
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="photoUrl" class="form-label">Photo URL</label>
+                <input type="url" 
+                       class="form-control" 
+                       id="photoUrl" 
+                       name="photoUrl" 
+                       placeholder="https://example.com/image.jpg">
+                <div class="form-text">Optional: Enter a URL for the item's photo</div>
+            </div>
+
+            <div class="mb-4">
+                <label for="amount" class="form-label">Amount</label>
+                <div class="input-group">
+                    <input type="number" 
+                           class="form-control" 
+                           id="amount" 
+                           name="amount"
+                           value="{{ prefill.amount }}"
+                           min="0.1"
+                           step="0.1"
+                           required>
+                    <select class="form-select" id="amountType" name="amountType" style="max-width: 150px;">
+                        <option value="pieces" {% if prefill.amountType == 'pieces' %}selected{% endif %}>pieces</option>
+                        <option value="grams" {% if prefill.amountType == 'grams' %}selected{% endif %}>grams</option>
+                        <option value="kilograms" {% if prefill.amountType == 'kilograms' %}selected{% endif %}>kilograms</option>
+                        <option value="milliliters" {% if prefill.amountType == 'milliliters' %}selected{% endif %}>milliliters</option>
+                        <option value="liters" {% if prefill.amountType == 'liters' %}selected{% endif %}>liters</option>
+                    </select>
+                </div>
+                <div class="invalid-feedback">
+                    Please enter a valid amount.
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="expirationDate" class="form-label">Expiration Date</label>
+                <input type="date" 
+                       class="form-control" 
+                       id="expirationDate" 
+                       name="expirationDate"
+                       min="{{ today|date:'Y-m-d' }}"
+                       required>
+                <div class="invalid-feedback">
+                    Please select a valid expiration date.
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Add to Inventory
+                </button>
+                <a href="{% url 'shopping_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Shopping List
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('addItemForm');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!form.checkValidity()) {
+            e.stopPropagation();
+            form.classList.add('was-validated');
+            return;
+        }
+
+        // Create new item type and add to inventory
+        const formData = {
+            'name': document.getElementById('itemName').value,
+            'category': document.getElementById('category').value,
+            'amount type': document.getElementById('amountType').value,
+            'photo_url': document.getElementById('photoUrl').value || null
+        };
+
+        // First create/update the item type
+        fetch('/api/v1/newType', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Failed to create item type');
+                });
+            }
+            
+            // Then add the item to inventory
+            const inventoryData = {
+                'itemType': formData.name,
+                'amount': document.getElementById('amount').value,
+                'expirationDate': document.getElementById('expirationDate').value
+            };
+
+            return fetch('/api/v1/addItem', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(inventoryData)
+            });
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Failed to add item to inventory');
+                });
+            }
+            alert('Item added to inventory successfully!');
+            // Reset the form
+            form.reset();
+            form.classList.remove('was-validated');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(error.message);
+        });
+    });
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %} 
