@@ -64,3 +64,15 @@ python manage.py createsuperuser
 # Run the server
 python manage.py runserver
 ~~~
+
+## Run the test
+~~~
+# create the migrations
+python manage.py makemigrations fridge
+
+# apply the migrations
+python manage.py migrate
+
+# run the test.py
+python manage.py test fridge
+~~~
